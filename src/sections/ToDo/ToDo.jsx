@@ -5,12 +5,15 @@ const ToDo = () => {
     const [originalArr, setOriginalArr] = useState([]);
     const [indexSaver, setIndexSaver] = useState(null);
     const [edit, setEdit] = useState(false);
-    const [isBtnDisabled, setIsBtnDisabled] = useState(true);
+    const [isBtnDisabled, setIsBtnDisabled] = useState(false);
     const [isEditBtnDisabled, setisEditBtnDisabled] = useState(false);
-
 
     const handleInput = (e) => {
         const value = e.target.value;
+        if (!value.trim()) {
+            setIsBtnDisabled(true);
+
+        }
         setInputValue(value);
         setIsBtnDisabled(value.trim() === "");
     };
@@ -35,11 +38,12 @@ const ToDo = () => {
 
     const handleUpdate = (e) => {
         e.preventDefault();
-        if (indexSaver === null || indexSaver < 0 || indexSaver >= originalArr.length) {
+        if (indexSaver === null) {
             alert("Invalid task index");
             return;
         }
         const trimmedValue = inputValue.trim();
+
         if (!trimmedValue) {
             alert('Cannot update with an empty task');
             return;
@@ -49,10 +53,9 @@ const ToDo = () => {
 
         setOriginalArr(copyOfarr);
         setIndexSaver(null);
-        setEdit(false);
+        setEdit(false); // Hide the Update button (or toggle add btn)
         setInputValue('');
-        setIsBtnDisabled(true);
-        setisEditBtnDisabled(false);
+        setisEditBtnDisabled(false)
 
     };
 
@@ -72,9 +75,13 @@ const ToDo = () => {
         }
         setIndexSaver(index);
         setEdit(true);
-        setInputValue(originalArr[index].trim());
-
+        const selectedValue = originalArr[index].trim();
+        setInputValue(selectedValue);
+        setIsBtnDisabled(selectedValue.trim() === "" ? true : false);
     };
+    useEffect(() => {
+        console.log(isEditBtnDisabled);
+    }, [isEditBtnDisabled])
 
     return (
         <div className="flex items-center justify-center min-h-screen bg-black-300">
@@ -91,7 +98,7 @@ const ToDo = () => {
                     />
 
                     <div className="flex gap-2 w-full">
-                        {indexSaver === null ? (
+                        {!edit ? (
                             <button
                                 type="submit"
                                 disabled={isBtnDisabled}
@@ -123,13 +130,14 @@ const ToDo = () => {
                                     <button
                                         onClick={() => handleEdit(index)}
                                         disabled={isEditBtnDisabled}
-                                        className={`px-3 py-1 cursor-pointer text-sm font-semibold text-white bg-yellow-500 rounded hover:bg-yellow-600 ${isEditBtnDisabled ? "cursor-not-allowed bg-gray-300 hover:bg-gray-300" : ''}`}
+                                        className={`px-3 py-1 cursor-pointer text-sm font-semibold text-white bg-yellow-500 rounded hover:bg-yellow-600 ${isEditBtnDisabled === true ? "!cursor-not-allowed !bg-gray-300 !hover:bg-gray-300" : ''}`}
                                     >
                                         Edit
                                     </button>
                                     <button
                                         onClick={() => handleDelete(index)}
-                                        className="px-3 py-1 text-sm font-semibold text-white bg-red-500 rounded hover:bg-red-600"
+                                        disabled={isEditBtnDisabled}
+                                        className={`px-3 py-1 text-sm font-semibold text-white bg-red-500 rounded hover:bg-red-600  ${isEditBtnDisabled === true ? "!cursor-not-allowed !bg-gray-300 !hover:bg-gray-300" : ''}`}
                                     >
                                         Delete
                                     </button>
