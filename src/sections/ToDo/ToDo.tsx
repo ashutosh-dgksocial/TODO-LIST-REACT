@@ -1,14 +1,32 @@
 import { useEffect, useState } from "react";
+type InputChangeEvent = React.ChangeEvent<HTMLInputElement>;
+type SubmitChangeEvent = React.ChangeEvent<HTMLFormElement>;
 
 const ToDo = () => {
-    const [inputValue, setInputValue] = useState('');
-    const [originalArr, setOriginalArr] = useState([]);
-    const [indexSaver, setIndexSaver] = useState(null);
-    const [edit, setEdit] = useState(false);
-    const [isBtnDisabled, setIsBtnDisabled] = useState(false);
-    const [isEditBtnDisabled, setisEditBtnDisabled] = useState(false);
+    const [inputValue, setInputValue] = useState<string>('');
+    const [originalArr, setOriginalArr] = useState<string[]>(() => {
+        const getlocal = localStorage.getItem('localstore') ?? "[]";
+        return JSON.parse(getlocal); // Do not need to check empty or not 
+    });
+    const [indexSaver, setIndexSaver] = useState<number | null>(null);
+    const [edit, setEdit] = useState<boolean>(false);
+    const [isBtnDisabled, setIsBtnDisabled] = useState<boolean>(false);
+    const [isEditBtnDisabled, setIsEditBtnDisabled] = useState<boolean>(false);
 
-    const handleInput = (e) => {
+
+    // useEffect(() => {
+    //     const myLocal = localStorage.getItem('localstore') ?? "[]"; //string '[]'
+    //     const parseMylocal = JSON.parse(myLocal) // []
+    //     if (parseMylocal.length > 0) { // need to check empty or not 
+    //         setOriginalArr(parseMylocal); // store into array
+    //     }
+    // }, []);
+
+    useEffect(() => {
+        localStorage.setItem('localstore', JSON.stringify(originalArr));
+    }, [originalArr]);
+
+    const handleInput = (e: InputChangeEvent) => {
         const value = e.target.value;
         if (!value.trim()) {
             setIsBtnDisabled(true);
@@ -18,12 +36,12 @@ const ToDo = () => {
         setIsBtnDisabled(value.trim() === "");
     };
 
-    const handleSubmit = (e) => {
+    const handleSubmit = (e: SubmitChangeEvent) => {
         e.preventDefault();
         const TrimedInpData = inputValue.trim();
         if (!TrimedInpData) return;
-        if (TrimedInpData.length > 30) {
-            alert('text should be less then 30 letters')
+        if (TrimedInpData.length > 50) {
+            alert('text should be less then 50 letters')
             return
         }
         if (originalArr.includes(TrimedInpData)) {
@@ -36,7 +54,7 @@ const ToDo = () => {
         setIsBtnDisabled(true);
     };
 
-    const handleUpdate = (e) => {
+    const handleUpdate = (e: SubmitChangeEvent) => {
         e.preventDefault();
         if (indexSaver === null) {
             alert("Invalid task index");
@@ -55,11 +73,11 @@ const ToDo = () => {
         setIndexSaver(null);
         setEdit(false); // Hide the Update button (or toggle add btn)
         setInputValue('');
-        setisEditBtnDisabled(false)
+        setIsEditBtnDisabled(false)
 
     };
 
-    const handleDelete = (myindex) => {
+    const handleDelete = (myindex: number) => {
         const copyOfarr = [...originalArr];
         // copyOfarr.splice(myindex, 1);
         // setOriginalArr(copyOfarr);
@@ -67,8 +85,8 @@ const ToDo = () => {
         setOriginalArr(filteredArr);
     };
 
-    const handleEdit = (index) => {
-        setisEditBtnDisabled(true);
+    const handleEdit = (index: number) => {
+        setIsEditBtnDisabled(true);
         if (index < 0 || index >= originalArr.length) {
             alert("Invalid task index");
             return;
@@ -79,16 +97,13 @@ const ToDo = () => {
         setInputValue(selectedValue);
         setIsBtnDisabled(selectedValue.trim() === "" ? true : false);
     };
-    useEffect(() => {
-        console.log(isEditBtnDisabled);
-    }, [isEditBtnDisabled])
 
     return (
         <div className="flex items-center justify-center min-h-screen bg-black-300">
             <div className="w-full max-w-md p-6 bg-white rounded-lg shadow-lg">
                 <h1 className="text-3xl font-semibold text-center text-gray-700 mb-4">My To-Do List</h1>
 
-                <form type="submit" onSubmit={edit === true ? handleUpdate : handleSubmit} className="flex flex-col items-center gap-4">
+                <form onSubmit={edit === true ? handleUpdate : handleSubmit} className="flex flex-col items-center gap-4">
                     <input
                         type="text"
                         placeholder="Add a new task..."
@@ -110,7 +125,6 @@ const ToDo = () => {
                             <button
                                 type="submit"
                                 disabled={isBtnDisabled}
-                                onClick={handleUpdate}
                                 className={`w-full px-4 py-2 font-semibold text-white bg-blue-500 rounded-lg hover:bg-blue-600 ${isBtnDisabled ? "bg-gray-500 hover:bg-gray-500 cursor-not-allowed" : ""}`}
                             >
                                 Update Task
@@ -119,7 +133,7 @@ const ToDo = () => {
                     </div>
                 </form>
 
-                <div className="mt-6 h-[20rem] overflow-y-auto">
+                <div className="mt-6 h-auto max-h-[20rem] overflow-y-auto">
                     <h2 className="text-xl font-medium text-gray-800 mb-2">Tasks:</h2>
                     <div className="space-y-3 ">
                         {originalArr.map((item, index) => (
